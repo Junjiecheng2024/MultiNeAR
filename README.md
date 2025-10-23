@@ -61,7 +61,7 @@ MultiNeAR/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/MultiNeAR.git
+git clone https://github.com/Junjiecheng2024/MultiNeAR
 cd MultiNeAR
 
 # Create conda environment
@@ -203,14 +203,6 @@ cfg = dict(
 )
 ```
 
-### Memory Requirements
-
-| Configuration | GPU RAM | Training Time (100 epochs) |
-|---------------|---------|----------------------------|
-| 64³ training, batch=8 | ~20GB | ~12 hours |
-| 128³ training, batch=4 | ~40GB | ~30 hours |
-
-**Tip**: Reduce `training_resolution` or `batch_size` if out of memory.
 
 ## Methodology
 
@@ -244,16 +236,13 @@ where:
 
 ## Results
 
-### Quantitative Metrics
+### Example Visualization
 
-| Metric | Original Labels | NeAR Refined |
-|--------|----------------|--------------|
-| Mean Dice (10 classes) | 0.764 | 0.773 |
-| Background Dice | 0.984 | 0.981 |
-| LAA Dice | 0.451 | 0.362* |
-| Coronary Dice | 0.194 | 0.370 |
+NeAR refines noisy annotations by learning implicit representations of cardiac structures:
 
-*Some structures show trade-offs; overall quality improves as measured by downstream 3D U-Net performance.
+![Example Result](assets/example_result.png)
+
+*Visualization of annotation refinement: (Left) Original CT slice, (Middle) Original segmentation, (Right) NeAR-refined segmentation. The refined result shows smoother boundaries and better anatomical consistency.*
 
 ### Qualitative Improvements
 
@@ -305,18 +294,9 @@ This implementation is adapted from the original NeAR paper:
 
 - Original NeAR Paper: [arXiv:2206.15328](https://arxiv.org/abs/2206.15328)
 - Original NeAR Code: [github.com/HINTLab/NeAR](https://github.com/HINTLab/NeAR)
-- Public Cardiac CT Dataset: [Add your dataset reference]
+- Public Cardiac CT Dataset: [github.com/Bjonze/Public-Cardiac-CT-Dataset](https://github.com/Bjonze/Public-Cardiac-CT-Dataset)
 
 ## License
 
 Apache License 2.0 (following original NeAR repository)
 
-## Acknowledgments
-
-- Original NeAR authors for the foundational method
-- [Add dataset providers]
-- [Add funding sources if applicable]
-
-## Contact
-
-For questions or issues, please open a GitHub issue or contact [your email].
