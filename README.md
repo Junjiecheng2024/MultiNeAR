@@ -55,7 +55,6 @@ MultiNeAR/
 - Python 3.9+
 - PyTorch 2.0+
 - CUDA 11.8+ (for GPU training)
-- 49GB+ GPU RAM (for full 128³ resolution)
 
 ### Setup
 
