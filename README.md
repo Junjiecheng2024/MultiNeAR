@@ -23,30 +23,65 @@ NeAR addresses the challenge of annotation quality in medical image segmentation
 
 ```
 MultiNeAR/
+├── assets/                        # Documentation assets
+│   └── example_result.png         # Example segmentation visualization
+│
 ├── near/                          # Core NeAR library
 │   ├── datasets/                  # Dataset implementations
-│   │   ├── refine_dataset.py      # CardiacMultiClassDataset
-│   │   ├── prepare_near_data.py   # Data preprocessing script
-│   │   ├── split_dataset.py       # Train/val split utility
-│   │   └── validate_data.py       # Data validation checks
+│   │   ├── refine_dataset.py      # CardiacMultiClassDataset for training
+│   │   ├── prepare_near_data.py   # Data preprocessing and conversion
+│   │   ├── split_dataset.py       # Train/validation split utility
+│   │   └── validate_data.py       # Data integrity validation
 │   ├── models/                    # Model architectures
 │   │   ├── nn3d/                  # 3D neural network modules
 │   │   │   ├── model.py           # EmbeddingDecoder (main model)
-│   │   │   ├── blocks.py          # Neural building blocks
-│   │   │   └── grid.py            # Grid sampling utilities
-│   │   └── losses.py              # Combined loss function (CE + Dice + L2)
+│   │   │   ├── blocks.py          # ResNet-style 3D blocks
+│   │   │   └── grid.py            # Coordinate grid sampling
+│   │   └── losses.py              # Combined loss (CE + Dice + L2 reg)
 │   └── utils/                     # Utility functions
-│       ├── misc.py                # General utilities
-│       ├── multicore.py           # Parallel processing
-│       ├── plot3d.py              # 3D visualization
-│       └── preprocessing.py       # Data preprocessing utils
-└── near_repairing/                # Training and inference scripts
-    ├── near_repair.py             # Main training script
-    ├── config_cardiac.py          # Configuration file
-    ├── inference.py               # Inference and evaluation
-    ├── analyze_inference_results.py  # Result analysis
-    └── check_class_distribution.py   # Distribution checker
+│       ├── misc.py                # General utilities and metrics
+│       ├── multicore.py           # Parallel data processing
+│       ├── plot3d.py              # 3D visualization tools
+│       └── preprocessing.py       # Image preprocessing utilities
+│
+├── near_repairing/                # Training and inference scripts
+│   ├── near_repair.py             # Main NeAR training script
+│   ├── config_cardiac.py          # Configuration for cardiac CT
+│   ├── inference.py               # Inference and evaluation pipeline
+│   ├── analyze_inference_results.py  # Result analysis and metrics
+│   └── check_class_distribution.py   # Class balance checker
+│
+├── validation/                    # Validation experiments
+│   ├── README.md                  # Validation overview
+│   ├── unet3d/                    # 3D U-Net downstream validation
+│   │   ├── README.md              # U-Net validation guide
+│   │   ├── train.py               # Train U-Net with baseline/repaired labels
+│   │   ├── evaluate.py            # Evaluate trained U-Net models
+│   │   └── resize_labels.py       # Resize 128³ labels to original size
+│   └── connected_components/      # Topological quality analysis
+│       ├── README.md              # Topology analysis guide
+│       └── analyze.py             # Connected components statistics
+│
+├── requirements.txt               # Python dependencies
+└── README.md                      # This file
 ```
+
+### Key Components
+
+**Core Library (`near/`)**:
+- Implicit neural representation for multi-class segmentation
+- Sample-specific latent codes with appearance integration
+- Custom losses and 3D neural architectures
+
+**Training Pipeline (`near_repairing/`)**:
+- End-to-end NeAR training and inference
+- Configuration management for different datasets
+- Comprehensive evaluation and analysis tools
+
+**Validation Suite (`validation/`)**:
+- **3D U-Net**: Demonstrates improved downstream model performance with repaired labels
+- **Connected Components**: Quantifies topological improvements (reduced fragmentation)
+- Complete documentation and ready-to-use scripts
 
 ## Installation
 
@@ -248,6 +283,42 @@ NeAR refines noisy annotations by learning implicit representations of cardiac s
 - **Smoother boundaries**: Reduced annotation artifacts
 - **Better topology**: More anatomically plausible structures
 - **Consistent small structures**: Improved coronary artery and LAA segmentation
+
+## Validation
+
+We provide quantitative validation of NeAR's effectiveness through two complementary approaches:
+
+### 1. 3D U-Net Downstream Validation
+
+Train downstream segmentation models using baseline vs. NeAR-repaired labels to demonstrate improved label quality:
+
+```bash
+cd validation/unet3d
+
+# Resize repaired labels
+python resize_labels.py
+
+# Train with repaired labels
+python train.py --label_type repaired --epochs 50
+
+# Train with baseline for comparison
+python train.py --label_type baseline --epochs 50
+```
+
+**Expected Result**: Models trained with repaired labels achieve higher Dice scores on validation sets.
+
+### 2. Connected Components Topology Analysis
+
+Quantify topological improvements by measuring fragmentation reduction:
+
+```bash
+cd validation/connected_components
+python analyze.py
+```
+
+**Expected Result**: Repaired segmentations show fewer disconnected components and higher largest-component ratios.
+
+See [`validation/README.md`](validation/README.md) for detailed instructions.
 
 ## Troubleshooting
 
