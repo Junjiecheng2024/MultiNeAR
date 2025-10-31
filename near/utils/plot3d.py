@@ -9,7 +9,6 @@ from skimage.measure import find_contours
 
 init_notebook_mode(connected=True)
 
-
 def plot_volume_as_panel(volume, aux1=None, aux2=None, aux3=None, title=None, 
                         height=8, width=None, cmap=None, cmap_aux=None, save_path=None):
     """Plot 2D slices of 3D volume in a grid panel.
@@ -69,7 +68,6 @@ def plot_volume_as_panel(volume, aux1=None, aux2=None, aux3=None, title=None,
     plt.clf()
     plt.close()
 
-
 def plot_voxels(voxels, aux=None):
     """Plot voxel slices sequentially."""
     if aux is not None:
@@ -83,14 +81,12 @@ def plot_voxels(voxels, aux=None):
             plt.imshow(aux[i], alpha=0.3)
         plt.show()
 
-
 def plot_hist(voxel):
     """Plot histogram of voxel intensities."""
     plt.hist(voxel.flatten(), bins=50, color='c')
     plt.xlabel("Pixel value")
     plt.ylabel("Frequency")
     plt.show()
-
 
 def plot_voxels_stack(stack, rows=6, cols=6, start=10, interval=5):
     """Plot multiple slices in a grid for quick browsing."""
@@ -102,7 +98,6 @@ def plot_voxels_stack(stack, rows=6, cols=6, start=10, interval=5):
         ax[int(i / rows), int(i % rows)].axis('off')
     plt.show()
 
-
 def find_edges(mask, level=0.5):
     """Extract contour edges from binary mask."""
     edges = find_contours(mask, level)
@@ -113,7 +108,6 @@ def find_edges(mask, level=0.5):
     xs = edges[:, 1]
     return xs, ys
 
-
 def plot_contours(arr, aux, level=0.5, ax=None, **kwargs):
     """Plot image with overlaid contours."""
     if ax is None:
@@ -123,7 +117,6 @@ def plot_contours(arr, aux, level=0.5, ax=None, **kwargs):
     if edges is not None:
         xs, ys = edges
         ax.plot(xs, ys)
-
 
 def plot_contours_slices(arr, aux, aux2=None, level=0.5, ax=None, cmap=None, 
                         color1='red', color2='blue', linewidth1=3, linewidth2=2.5, 
@@ -153,7 +146,6 @@ def plot_contours_slices(arr, aux, aux2=None, level=0.5, ax=None, cmap=None,
     plt.clf()
     plt.close()
 
-
 def plot_voxel(voxel, title='voxel'):
     """Plot single voxel slice."""
     plt.figure(figsize=(4, 4))
@@ -161,11 +153,9 @@ def plot_voxel(voxel, title='voxel'):
     plt.imshow(voxel, cmap=plt.cm.gray)
     plt.show()
 
-
 def plot_voxel_slice(voxels, slice_i=0, title="Slice "):
     """Plot specific slice from volume."""
     plot_voxel(voxels[slice_i], title=title + str(slice_i))
-
 
 def animate_voxels(voxels, aux=None, interval=300):
     """Create animation of volume slices."""
@@ -185,7 +175,6 @@ def animate_voxels(voxels, aux=None, interval=300):
                                  interval=interval, blit=True)
     return ani
 
-
 def make_mesh(image, threshold, step_size):
     """Generate 3D mesh using marching cubes algorithm.
     
@@ -204,7 +193,6 @@ def make_mesh(image, threshold, step_size):
                                                      allow_degenerate=True)
     return verts, faces
 
-
 def hidden_axis(ax, r=None):
     """Hide Plotly axis elements."""
     ax.showgrid = False
@@ -214,7 +202,6 @@ def hidden_axis(ax, r=None):
     ax.showticklabels = False
     ax.range = r
     ax.title = ""
-
 
 def plotly_3d_to_html(verts, faces, filename="tmp.html", title="",
                      zyx_range=[[0, 128],[0, 128],[0, 128]],
@@ -242,7 +229,6 @@ def plotly_3d_to_html(verts, faces, filename="tmp.html", title="",
         fig.write_image(filename+".png")
     return fig
 
-
 def plotly_3d_scan_to_html(scan, filename, threshold=0.5, step_size=1, title="",
                           zyx_range=None, pad_width=1,
                           camera=dict(eye=dict(x=0., y=2.5, z=0.)),
@@ -252,7 +238,6 @@ def plotly_3d_scan_to_html(scan, filename, threshold=0.5, step_size=1, title="",
         scan = np.pad(scan, pad_width=pad_width)
     v, f = make_mesh(scan, threshold=threshold, step_size=step_size)
     return plotly_3d_to_html(v, f, filename, title, zyx_range, camera, colormap)
-
 
 def plotly_3d(verts, faces, filename='tmp',
              zyx_range=[[0, 128],[0, 128],[0, 128]],
@@ -277,7 +262,6 @@ def plotly_3d(verts, faces, filename='tmp',
 
     if save_figure:
         fig.write_image(filename+".png")
-
 
 def plotly_3d_scan(scan, filename='tmp', threshold=0.5, step_size=1,
                   zyx_range=None, pad_width=1,

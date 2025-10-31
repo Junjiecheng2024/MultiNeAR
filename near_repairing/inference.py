@@ -20,7 +20,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from near.models.nn3d.model import EmbeddingDecoder
 from near.models.nn3d.grid import GatherGridsFromVolumes
@@ -32,7 +32,6 @@ try:
 except ImportError:
     HAS_NIBABEL = False
     print("Warning: nibabel not installed. Can only save .npy format.")
-
 
 def compute_dice_per_class(pred, gt, num_classes=11, smooth=1e-6):
     """Compute Dice score for each class.
@@ -64,13 +63,11 @@ def compute_dice_per_class(pred, gt, num_classes=11, smooth=1e-6):
     
     return np.array(dice_scores)
 
-
 def to_device(x, device):
     """Move data to device recursively."""
     if isinstance(x, (list, tuple)):
         return type(x)(to_device(xx, device) for xx in x)
     return x.to(device) if hasattr(x, "to") else x
-
 
 @torch.no_grad()
 def sample_labels_nearest(seg_long, grids):
@@ -90,7 +87,6 @@ def sample_labels_nearest(seg_long, grids):
         align_corners=True
     )
     return lab.squeeze(1).long()
-
 
 def run_inference(model, dataset, gather_fn, device, output_dir, 
                   save_format='nii.gz', save_visualization=False, vis_num=10):
@@ -150,26 +146,31 @@ def run_inference(model, dataset, gather_fn, device, output_dir,
         # Compute metrics
         dice_scores = compute_dice_per_class(pred_np, seg_np, num_classes=11)
         
+        # Get original case ID from dataset
+        original_id = dataset.info.iloc[idx][dataset.id_key]
+        
         # Prepare result entry
-        result = {'case_id': f"case_{idx:03d}"}
+        result = {'case_id': original_id}
         for c in range(11):
             result[f'dice_class_{c}'] = dice_scores[c]
         result['dice_mean'] = np.nanmean(dice_scores[1:])  # Exclude background
         
         results.append(result)
         
-        # Save segmentation
+        # Save segmentation using original ID
         if save_format == 'npy':
-            save_path = seg_dir / f"case_{idx:03d}.npy"
+            save_path = seg_dir / f"{original_id}.npy"
             np.save(save_path, pred_np)
         elif save_format == 'nii.gz' and HAS_NIBABEL:
-            save_path = seg_dir / f"case_{idx:03d}.nii.gz"
+            save_path = seg_dir / f"{original_id}.nii.gz"
             nib_img = nib.Nifti1Image(pred_np.astype(np.int16), affine=np.eye(4))
             nib.save(nib_img, save_path)
         
-        # Save visualization
+        # Save visualization using original ID
         if save_visualization and idx < vis_num:
-            save_comparison_slice(seg_np, pred_np, vis_dir, idx)
+            # Get CT image for visualization
+            ct_np = app.cpu().numpy()[0, 0]  # [D,H,W]
+            save_comparison_slice(ct_np, seg_np, pred_np, vis_dir, original_id)
     
     # Create results DataFrame
     results_df = pd.DataFrame(results)
@@ -201,15 +202,15 @@ def run_inference(model, dataset, gather_fn, device, output_dir,
     
     return results_df
 
-
-def save_comparison_slice(original, refined, output_dir, case_idx, slice_idx=None):
-    """Save visualization comparing original and refined segmentations.
+def save_comparison_slice(ct_image, original, refined, output_dir, case_id, slice_idx=None):
+    """Save visualization comparing CT, original and refined segmentations.
     
     Args:
+        ct_image: CT image [D,H,W]
         original: Original segmentation [D,H,W]
         refined: Refined segmentation [D,H,W]
         output_dir: Output directory
-        case_idx: Case index
+        case_id: Case ID (can be string or int)
         slice_idx: Slice index (middle slice if None)
     """
     if slice_idx is None:
@@ -217,29 +218,29 @@ def save_comparison_slice(original, refined, output_dir, case_idx, slice_idx=Non
     
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     
-    # Original
-    axes[0].imshow(original[slice_idx], cmap='tab20', vmin=0, vmax=10)
-    axes[0].set_title('Original Segmentation')
+    # CT Image
+    axes[0].imshow(ct_image[slice_idx], cmap='gray')
+    axes[0].set_title('CT Image')
     axes[0].axis('off')
     
-    # Refined
-    axes[1].imshow(refined[slice_idx], cmap='tab20', vmin=0, vmax=10)
-    axes[1].set_title('Refined Segmentation')
+    # Original Segmentation (overlay on CT)
+    axes[1].imshow(ct_image[slice_idx], cmap='gray', alpha=0.5)
+    axes[1].imshow(original[slice_idx], cmap='tab20', alpha=0.5, vmin=0, vmax=10)
+    axes[1].set_title('Original Segmentation')
     axes[1].axis('off')
     
-    # Difference
-    diff = (original[slice_idx] != refined[slice_idx]).astype(np.float32)
-    axes[2].imshow(diff, cmap='hot', vmin=0, vmax=1)
-    axes[2].set_title('Differences')
+    # Refined Segmentation (overlay on CT)
+    axes[2].imshow(ct_image[slice_idx], cmap='gray', alpha=0.5)
+    axes[2].imshow(refined[slice_idx], cmap='tab20', alpha=0.5, vmin=0, vmax=10)
+    axes[2].set_title('Refined Segmentation')
     axes[2].axis('off')
     
-    plt.suptitle(f'Case {case_idx:03d} - Slice {slice_idx}')
+    plt.suptitle(f'Case {case_id} - Slice {slice_idx}')
     plt.tight_layout()
     
-    save_path = output_dir / f"case_{case_idx:03d}_slice{slice_idx}.png"
+    save_path = output_dir / f"{case_id}_slice{slice_idx}.png"
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
     plt.close()
-
 
 def main():
     parser = argparse.ArgumentParser(description='NeAR Inference Script')
@@ -262,8 +263,14 @@ def main():
     args = parser.parse_args()
     
     # Load configuration
-    import importlib
-    cfg_module = importlib.import_module(args.config)
+    config_path = os.path.join(os.path.dirname(__file__), f"{args.config}.py")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+    
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(args.config, config_path)
+    cfg_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cfg_module)
     cfg = cfg_module.cfg
     
     print("=" * 80)
@@ -304,6 +311,29 @@ def main():
     
     # Load checkpoint
     checkpoint = torch.load(args.model_path, map_location=device)
+    
+    # Handle encoder size mismatch (trained on 798, inference on 998)
+    trained_n_samples = checkpoint['encoder.weight'].shape[0]
+    current_n_samples = len(dataset)
+    
+    if trained_n_samples != current_n_samples:
+        print(f"⚠️  Model trained on {trained_n_samples} samples, inference on {current_n_samples} samples")
+        print(f"   Extending encoder embeddings for new samples...")
+        
+        # Get trained embeddings
+        trained_embeddings = checkpoint['encoder.weight']  # [798, 256]
+        
+        # Create new embeddings for unseen samples (initialize randomly)
+        latent_dim = trained_embeddings.shape[1]
+        new_embeddings = torch.randn(current_n_samples - trained_n_samples, latent_dim, 
+                                     device=trained_embeddings.device) * 0.01
+        
+        # Concatenate: [798, 256] + [200, 256] = [998, 256]
+        extended_embeddings = torch.cat([trained_embeddings, new_embeddings], dim=0)
+        checkpoint['encoder.weight'] = extended_embeddings
+        
+        print(f"   ✅ Extended embeddings: {trained_embeddings.shape} → {extended_embeddings.shape}")
+    
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
@@ -326,7 +356,6 @@ def main():
     print(f"  - repaired_segmentations/ ({len(dataset)} files)")
     if args.save_visualization:
         print(f"  - visualizations/ ({args.vis_num} files)")
-
 
 if __name__ == "__main__":
     main()

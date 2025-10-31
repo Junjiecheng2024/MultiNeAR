@@ -2,7 +2,6 @@
 import numpy as np
 from scipy.ndimage import zoom
 
-
 def pad_img(img, target_size, mode='constant', constant=0):
     """Pad image to target size.
     
@@ -37,7 +36,6 @@ def pad_img(img, target_size, mode='constant', constant=0):
     
     return padded
 
-
 def crop_img(img, target_size):
     """Crop image to target size from center.
     
@@ -66,7 +64,6 @@ def crop_img(img, target_size):
     
     return cropped
 
-
 def resize_img(img, target_size, order=1):
     """Resize image to target size using interpolation.
     
@@ -86,7 +83,6 @@ def resize_img(img, target_size, order=1):
     
     return resized
 
-
 def flip_img(img, axis):
     """Flip image along specified axis.
     
@@ -98,7 +94,6 @@ def flip_img(img, axis):
         Flipped image
     """
     return np.flip(img, axis=axis)
-
 
 def normalize_intensity(img, clip_range=None, percentile_range=None):
     """Normalize image intensities to [0, 1].

@@ -7,8 +7,7 @@ import numpy as np
 from pathlib import Path
 import argparse
 
-
-def split_dataset(info_csv_path, train_ratio=0.8, seed=42, output_dir=None):
+def split_dataset(info_csv_path, train_ratio=0.8, seed=12, output_dir=None):
     """Split dataset into training and validation sets.
     
     Args:
@@ -55,7 +54,6 @@ def split_dataset(info_csv_path, train_ratio=0.8, seed=42, output_dir=None):
     print(f"  Validation: {val_path}")
     
     return train_df, val_df
-
 
 def main():
     """Main entry point for command-line execution."""
@@ -117,7 +115,6 @@ def main():
     print("\n" + "=" * 80)
     print("Splitting complete!")
     print("=" * 80)
-
 
 if __name__ == "__main__":
     main()

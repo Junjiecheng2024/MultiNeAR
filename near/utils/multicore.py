@@ -9,7 +9,6 @@ AVAILABLE_CORES = multiprocessing.cpu_count()
 
 print('Cores available:', AVAILABLE_CORES)
 
-
 class TaskRunner:
     """Execute tasks in parallel using multiple processes."""
     
@@ -60,7 +59,6 @@ class TaskRunner:
         if not hasattr(self, "results_"):
             raise AttributeError
         return [r[1] for r in self.results_ if r[0] == "error"]
-
 
 if __name__ == '__main__':
     print("The following provides the usage code of the multi-core `TaskRunner`.")

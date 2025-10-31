@@ -19,7 +19,6 @@ else:
     def to_device(x, gpu=None):
         return x
 
-
 if USE_GPU and torch.cuda.is_available():
 
     def to_var(x, requires_grad=False, gpu=None):
@@ -31,14 +30,12 @@ else:
     def to_var(x, requires_grad=False, gpu=None):
         return x.requires_grad_(requires_grad)
 
-
 def write_json(ctx, path, verbose=False):
     with open(path, "w") as f:
         json_string = json.dumps(ctx, indent=4)
         f.write(json_string)
     if verbose:
         print(json_string)
-
 
 class Metrics:
 
@@ -98,7 +95,6 @@ class Metrics:
     def plot(self, key, marker='-'):
         plt.plot(self.metrics[key], marker)
 
-
 def surface_dice(y_pred, y_true):
     '''a.k.a. Normalized Surface Distance (NSD)'''
     mask_gt, mask_pred = y_true, y_pred
@@ -106,7 +102,6 @@ def surface_dice(y_pred, y_true):
         mask_gt, mask_pred, spacing_mm=(1, 1, 1))
     ret = compute_surface_dice_at_tolerance(surface_distances, 1)
     return ret
-
 
 def cal_surface_dice(y_pred, y_true):
 
@@ -117,7 +112,6 @@ def cal_surface_dice(y_pred, y_true):
         sdice_ret.append(surface_dice(pred, true).item())
 
     return np.mean(sdice_ret)
-
 
 def load_model_on_multi_gpu(model, model_path, kwargs=None):
 
@@ -133,7 +127,6 @@ def load_model_on_multi_gpu(model, model_path, kwargs=None):
 
     model.load_state_dict(new_state_dict)
     return model
-
 
 def load_model_on_single_gpu(model, model_path, kwargs=None):
     if kwargs is not None:

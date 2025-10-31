@@ -18,7 +18,6 @@ from pathlib import Path
 plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
-
 def analyze_results(csv_path, output_dir):
     """Analyze inference results and generate report.
     
@@ -97,7 +96,6 @@ def analyze_results(csv_path, output_dir):
     generate_markdown_report(stats_df, class_names, df, output_path)
     
     return stats_df
-
 
 def generate_visualizations(df, stats_df, class_names, output_path):
     """Generate visualization plots.
@@ -182,7 +180,6 @@ def generate_visualizations(df, stats_df, class_names, output_path):
     plt.close()
     print(f"Saved: {output_path / 'dice_boxplot.png'}")
 
-
 def generate_markdown_report(stats_df, class_names, df, output_path):
     """Generate markdown analysis report.
     
@@ -260,7 +257,6 @@ def generate_markdown_report(stats_df, class_names, df, output_path):
     
     print(f"\nMarkdown report saved to: {report_path}")
 
-
 def main():
     parser = argparse.ArgumentParser(description='Analyze NeAR inference results')
     parser.add_argument('--csv', type=str, 
@@ -286,7 +282,6 @@ def main():
     print("  - laa_dice_distribution.png")
     print("  - dice_boxplot.png")
     print("  - INFERENCE_REPORT.md")
-
 
 if __name__ == "__main__":
     main()

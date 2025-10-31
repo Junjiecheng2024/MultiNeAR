@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from near.datasets.refine_dataset import CardiacMultiClassDataset
 
-
 def validate_dataset(data_root, num_samples_to_check=5):
     """Validate preprocessed dataset integrity and statistics.
     
@@ -136,7 +135,6 @@ def validate_dataset(data_root, num_samples_to_check=5):
     print("\nIf all checks passed, you can start training:")
     print("  cd repairing/near_repairing")
     print("  python3 near_repair.py")
-
 
 if __name__ == "__main__":
     import argparse
